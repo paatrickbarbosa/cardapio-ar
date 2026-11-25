@@ -6,7 +6,6 @@
       "id": "peca-01",
       "nome": "Peca 01",
       "descricao": "Modelo peca 01.",
-      "preco": 42.9,
       "categoria": "Entradas",
       "modelo": "modelos/peca1.glb"
     },
@@ -14,7 +13,6 @@
       "id": "eixo",
       "nome": "Eixo",
       "descricao": "Modelo eixo.",
-      "preco": 0,
       "categoria": "Testes",
       "modelo": "modelos/peca4.glb"
     }
