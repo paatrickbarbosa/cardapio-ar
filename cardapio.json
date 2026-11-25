@@ -1,0 +1,24 @@
+{
+  "restaurante": "Restaurante Demonstração",
+  "subtitulo": "Toque em um prato e veja ele na sua mesa, em tamanho real",
+  "pratos": [
+    {
+      "id": "nachos",
+      "nome": "Nachos da casa",
+      "descricao": "Tortilhas crocantes com guacamole, queijo cheddar, tomate e pimenta jalapeño.",
+      "preco": 42.9,
+      "categoria": "Entradas",
+      "modelo": "modelos/nachos.glb",
+      "imagem": "img/nachos.webp"
+    },
+    {
+      "id": "abacate",
+      "nome": "Abacate (teste de escala)",
+      "descricao": "Modelo de exemplo com 10 cm, para conferir se o tamanho real está certo na mesa.",
+      "preco": 0,
+      "categoria": "Testes",
+      "modelo": "modelos/abacate.glb",
+      "imagem": "img/abacate.webp"
+    }
+  ]
+}
