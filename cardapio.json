@@ -17,7 +17,7 @@
       "descricao": "Modelo de exemplo com 10 cm, para conferir se o tamanho real está certo na mesa.",
       "preco": 0,
       "categoria": "Testes",
-      "modelo": "modelos/abacate.glb",
+      "modelo": "modelos/peca4.glb",
       "imagem": "img/abacate.webp"
     }
   ]
