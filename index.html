@@ -1,108 +1,267 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cardápio em realidade aumentada</title>
-<script type="module" src="model-viewer.min.js"></script>
-<style>
-  :root { --bg:#faf7f2; --card:#fff; --ink:#1f1b16; --muted:#6f665c; --accent:#c2410c; --line:#ece5da; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
-  header { padding:28px 16px 12px; max-width:640px; margin:0 auto; }
-  h1 { margin:0; font-size:26px; }
-  header p { margin:6px 0 0; color:var(--muted); font-size:15px; }
-  main { max-width:640px; margin:0 auto; padding:0 16px 40px; }
-  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:24px 0 10px; }
-  .prato { display:flex; gap:14px; width:100%; text-align:left; background:var(--card); border:1px solid var(--line);
-           border-radius:16px; padding:12px; margin-bottom:12px; cursor:pointer; font:inherit; color:inherit; }
-  .prato img { width:96px; height:96px; object-fit:cover; border-radius:12px; background:#f1ece4; flex:none; }
-  .prato h3 { margin:2px 0 4px; font-size:17px; }
-  .prato p { margin:0; color:var(--muted); font-size:14px; }
-  .linha { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
-  .preco { font-weight:600; }
-  .tag { font-size:13px; color:var(--accent); font-weight:600; }
-  /* Visualizador em tela cheia */
-  #viewer { position:fixed; inset:0; background:var(--bg); display:none; flex-direction:column; z-index:10; }
-  #viewer.aberto { display:flex; }
-  #viewer header { display:flex; align-items:center; gap:12px; width:100%; max-width:none; padding:14px 16px; }
-  #fechar { border:0; background:var(--card); border:1px solid var(--line); border-radius:999px; width:40px; height:40px; font-size:20px; }
-  #viewer h3 { margin:0; font-size:18px; }
-  model-viewer { flex:1; width:100%; background:linear-gradient(#fff,#f1ece4); --poster-color:transparent; }
-  .ar-btn { position:absolute; left:50%; bottom:28px; transform:translateX(-50%); border:0; border-radius:999px;
-            background:var(--accent); color:#fff; font:600 17px system-ui,sans-serif; padding:16px 26px; box-shadow:0 6px 20px rgba(0,0,0,.2); }
-  .dica { text-align:center; color:var(--muted); font-size:14px; padding:10px 16px 18px; margin:0; }
-  #sem-ar { display:none; }
-</style>
-</head>
-<body>
-<header>
-  <h1 id="nome-restaurante">Cardápio</h1>
-  <p id="subtitulo"></p>
-</header>
-<main id="lista"></main>
-
-<section id="viewer" aria-modal="true" role="dialog">
-  <header>
-    <button id="fechar" aria-label="Voltar">←</button>
-    <h3 id="viewer-nome"></h3>
-  </header>
-  <model-viewer id="mv" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1"
-                ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
-                camera-orbit="30deg 60deg auto" alt="Prato em 3D">
-    <button slot="ar-button" class="ar-btn">📱 Ver na minha mesa</button>
-  </model-viewer>
-  <p class="dica" id="dica">Gire o prato com o dedo. Toque em "Ver na minha mesa" e aponte o celular para a mesa.</p>
-</section>
-
-<script>
-const fmt = (v) => v ? v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' }) : '';
-const viewer = document.getElementById('viewer');
-const mv = document.getElementById('mv');
-
-function abrir(prato) {
-  document.getElementById('viewer-nome').textContent = prato.nome;
-  mv.src = prato.modelo;
-  mv.poster = prato.imagem;
-  viewer.classList.add('aberto');
-  history.pushState({ prato: prato.id }, '', '#' + prato.id);
-}
-function fechar() { viewer.classList.remove('aberto'); mv.removeAttribute('src'); }
-document.getElementById('fechar').onclick = () => history.back();
-window.addEventListener('popstate', fechar);
-
-mv.addEventListener('load', () => {
-  if (!mv.canActivateAR) {
-    document.getElementById('dica').textContent =
-      'Este aparelho não abre realidade aumentada. Gire o prato com o dedo para ver todos os lados.';
-  }
-});
-
-fetch('cardapio.json').then(r => r.json()).then(dados => {
-  document.title = dados.restaurante + ' · Cardápio';
-  document.getElementById('nome-restaurante').textContent = dados.restaurante;
-  document.getElementById('subtitulo').textContent = dados.subtitulo;
-  const lista = document.getElementById('lista');
-  const categorias = [...new Set(dados.pratos.map(p => p.categoria))];
-  for (const cat of categorias) {
-    const h = document.createElement('h2'); h.textContent = cat; lista.appendChild(h);
-    for (const p of dados.pratos.filter(p => p.categoria === cat)) {
-      const b = document.createElement('button');
-      b.className = 'prato';
-      b.innerHTML = `<img alt="" loading="lazy"><div style="flex:1"><h3></h3><p></p>
-        <div class="linha"><span class="preco"></span><span class="tag">Ver em 3D ›</span></div></div>`;
-      b.querySelector('img').src = p.imagem;
-      b.querySelector('h3').textContent = p.nome;
-      b.querySelector('p').textContent = p.descricao;
-      b.querySelector('.preco').textContent = fmt(p.preco);
-      b.onclick = () => abrir(p);
-      lista.appendChild(b);
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cardápio em realidade aumentada</title>
+  <script type="module" src="model-viewer.min.js"></script>
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --card: #fff;
+      --ink: #1f1b16;
+      --muted: #6f665c;
+      --accent: #c2410c;
+      --line: #ece5da;
     }
-  }
-  // Link direto para um prato (ex.: QR code de um prato específico: ...#nachos)
-  const alvo = dados.pratos.find(p => '#' + p.id === location.hash);
-  if (alvo) { history.replaceState(null, '', location.pathname); abrir(alvo); }
-});
-</script>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+
+    header {
+      padding: 28px 16px 12px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 16px 40px;
+    }
+
+    h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin: 24px 0 10px;
+    }
+
+    .prato {
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+    }
+
+    .prato img {
+      width: 96px;
+      height: 96px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #f1ece4;
+      flex: none;
+    }
+
+    .prato h3 {
+      margin: 2px 0 4px;
+      font-size: 17px;
+    }
+
+    .prato p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .preco {
+      font-weight: 600;
+    }
+
+    .tag {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Visualizador em tela cheia */
+    #viewer {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      z-index: 10;
+    }
+
+    #viewer.aberto {
+      display: flex;
+    }
+
+    #viewer header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: none;
+      padding: 14px 16px;
+    }
+
+    #fechar {
+      border: 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+
+    #viewer h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    model-viewer {
+      flex: 1;
+      width: 100%;
+      background: linear-gradient(#fff, #f1ece4);
+      --poster-color: transparent;
+    }
+
+    .ar-btn {
+      position: absolute;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      border: 0;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font: 600 17px system-ui, sans-serif;
+      padding: 16px 26px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .2);
+    }
+
+    .dica {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 10px 16px 18px;
+      margin: 0;
+    }
+
+    #sem-ar {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1 id="nome-restaurante">Cardápio</h1>
+    <p id="subtitulo"></p>
+  </header>
+  <main id="lista"></main>
+
+  <section id="viewer" aria-modal="true" role="dialog">
+    <header>
+      <button id="fechar" aria-label="Voltar">←</button>
+      <h3 id="viewer-nome"></h3>
+    </header>
+    <model-viewer id="mv" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1" ar
+      ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor" xr-environment
+      camera-orbit="30deg 60deg auto" alt="Prato em 3D">
+      <button slot="ar-button" class="ar-btn">Ver na minha mesa</button>
+    </model-viewer>
+    <p class="dica" id="dica">Gire o prato com o dedo. Toque em "Ver na minha mesa" e aponte o celular para a mesa.</p>
+  </section>
+
+  <script>
+    const fmt = (v) => v ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '';
+    const viewer = document.getElementById('viewer');
+    const mv = document.getElementById('mv');
+
+    function abrir(prato) {
+      document.getElementById('viewer-nome').textContent = prato.nome;
+      mv.src = prato.modelo;
+      // iPhone/iPad (Quick Look): usa o .usdz se existir; senão o model-viewer converte o .glb sozinho
+      if (prato.modeloIos) mv.setAttribute('ios-src', prato.modeloIos); else mv.removeAttribute('ios-src');
+      mv.poster = prato.imagem;
+      viewer.classList.add('aberto');
+      history.pushState({ prato: prato.id }, '', '#' + prato.id);
+    }
+    function fechar() { viewer.classList.remove('aberto'); mv.removeAttribute('src'); }
+    document.getElementById('fechar').onclick = () => history.back();
+    window.addEventListener('popstate', fechar);
+
+    mv.addEventListener('load', () => {
+      if (!mv.canActivateAR) {
+        document.getElementById('dica').textContent = window.isSecureContext
+          ? 'Este aparelho não abre realidade aumentada. Gire o prato com o dedo para ver todos os lados.'
+          : 'A realidade aumentada só funciona com o site aberto em https://. Gire o prato com o dedo para ver todos os lados.';
+      }
+    });
+    mv.addEventListener('ar-status', (e) => {
+      if (e.detail.status === 'failed') {
+        document.getElementById('dica').textContent =
+          'Não foi possível abrir a realidade aumentada. Verifique se a câmera está liberada e tente de novo.';
+      }
+    });
+    if (!window.isSecureContext) console.warn('AR desativado: a página precisa ser servida por HTTPS.');
+
+    fetch('cardapio.json').then(r => r.json()).then(dados => {
+      document.title = dados.restaurante + ' · Cardápio';
+      document.getElementById('nome-restaurante').textContent = dados.restaurante;
+      document.getElementById('subtitulo').textContent = dados.subtitulo;
+      const lista = document.getElementById('lista');
+      const categorias = [...new Set(dados.pratos.map(p => p.categoria))];
+      for (const cat of categorias) {
+        const h = document.createElement('h2'); h.textContent = cat; lista.appendChild(h);
+        for (const p of dados.pratos.filter(p => p.categoria === cat)) {
+          const b = document.createElement('button');
+          b.className = 'prato';
+          b.innerHTML = `<img alt="" loading="lazy"><div style="flex:1"><h3></h3><p></p>
+        <div class="linha"><span class="preco"></span><span class="tag">Ver em 3D ›</span></div></div>`;
+          b.querySelector('img').src = p.imagem;
+          b.querySelector('h3').textContent = p.nome;
+          b.querySelector('p').textContent = p.descricao;
+          b.querySelector('.preco').textContent = fmt(p.preco);
+          b.onclick = () => abrir(p);
+          lista.appendChild(b);
+        }
+      }
+      // Link direto para um prato (ex.: QR code de um prato específico: ...#nachos)
+      const alvo = dados.pratos.find(p => '#' + p.id === location.hash);
+      if (alvo) { history.replaceState(null, '', location.pathname); abrir(alvo); }
+    });
+  </script>
 </body>
+
 </html>
