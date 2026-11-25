@@ -169,6 +169,96 @@
       box-shadow: 0 6px 20px rgba(0, 0, 0, .2);
     }
 
+    /* Controles exibidos apenas durante a sessão de AR (WebXR) */
+    .ar-ui {
+      display: none;
+    }
+
+    model-viewer.em-ar .ar-ui {
+      display: block;
+    }
+
+    .ar-info {
+      position: absolute;
+      top: calc(16px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: calc(100% - 140px);
+      background: rgba(255, 255, 255, .92);
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 8px 14px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+    }
+
+    .ar-info strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .ar-info span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .ar-controles {
+      position: absolute;
+      left: 50%;
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, .92);
+      border-radius: 999px;
+      padding: 8px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .2);
+    }
+
+    .ar-controles button {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--card);
+      color: var(--ink);
+      font: 600 22px/1 system-ui, sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .ar-controles button:active {
+      background: #f1ece4;
+    }
+
+    .ar-controles svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    #ar-escala {
+      width: auto;
+      min-width: 76px;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+
+    .ar-ajuda {
+      position: absolute;
+      left: 50%;
+      bottom: calc(96px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: calc(100% - 32px);
+      background: rgba(0, 0, 0, .6);
+      color: #fff;
+      font-size: 13px;
+      border-radius: 999px;
+      padding: 6px 12px;
+    }
+
     .dica {
       text-align: center;
       color: var(--muted);
@@ -199,6 +289,25 @@
       ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor" xr-environment
       camera-orbit="30deg 60deg auto" alt="Prato em 3D">
       <button slot="ar-button" class="ar-btn">Ver na minha mesa</button>
+
+      <div class="ar-ui ar-info" aria-live="polite">
+        <strong id="ar-nome"></strong>
+        <span id="ar-preco"></span>
+      </div>
+      <p class="ar-ui ar-ajuda" id="ar-ajuda">Arraste para mover o prato na mesa</p>
+      <div class="ar-ui ar-controles" id="ar-controles" role="toolbar" aria-label="Controles do prato">
+        <button type="button" id="ar-girar-esq" aria-label="Girar para a esquerda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v5h5" /></svg>
+        </button>
+        <button type="button" id="ar-menor" aria-label="Diminuir">&minus;</button>
+        <button type="button" id="ar-escala" aria-label="Voltar ao tamanho real">Real</button>
+        <button type="button" id="ar-maior" aria-label="Aumentar">+</button>
+        <button type="button" id="ar-girar-dir" aria-label="Girar para a direita">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>
+        </button>
+      </div>
     </model-viewer>
     <p class="dica" id="dica">Gire o prato com o dedo. Toque em "Ver na minha mesa" e aponte o celular para a mesa.</p>
   </section>
@@ -214,6 +323,9 @@
       // iPhone/iPad (Quick Look): usa o .usdz se existir; senão o model-viewer converte o .glb sozinho
       if (prato.modeloIos) mv.setAttribute('ios-src', prato.modeloIos); else mv.removeAttribute('ios-src');
       mv.poster = prato.imagem;
+      document.getElementById('ar-nome').textContent = prato.nome;
+      document.getElementById('ar-preco').textContent = fmt(prato.preco);
+      resetarAR();
       viewer.classList.add('aberto');
       history.pushState({ prato: prato.id }, '', '#' + prato.id);
     }
@@ -228,8 +340,39 @@
           : 'A realidade aumentada só funciona com o site aberto em https://. Gire o prato com o dedo para ver todos os lados.';
       }
     });
+    // Controles do modo AR: giro em passos de 45 graus e escala de 50% a 300% (100% = tamanho real)
+    const ESCALAS = [0.5, 0.75, 1, 1.5, 2, 3];
+    let giro = 0, iEscala = ESCALAS.indexOf(1);
+
+    function aplicarAR() {
+      mv.orientation = `0deg 0deg ${giro}deg`;
+      const s = ESCALAS[iEscala];
+      mv.scale = `${s} ${s} ${s}`;
+      document.getElementById('ar-escala').textContent = s === 1 ? 'Real' : Math.round(s * 100) + '%';
+      document.getElementById('ar-menor').disabled = iEscala === 0;
+      document.getElementById('ar-maior').disabled = iEscala === ESCALAS.length - 1;
+    }
+    function resetarAR() { giro = 0; iEscala = ESCALAS.indexOf(1); aplicarAR(); }
+
+    document.getElementById('ar-girar-esq').onclick = () => { giro += 45; aplicarAR(); };
+    document.getElementById('ar-girar-dir').onclick = () => { giro -= 45; aplicarAR(); };
+    document.getElementById('ar-menor').onclick = () => { iEscala = Math.max(0, iEscala - 1); aplicarAR(); };
+    document.getElementById('ar-maior').onclick = () => { iEscala = Math.min(ESCALAS.length - 1, iEscala + 1); aplicarAR(); };
+    document.getElementById('ar-escala').onclick = () => { iEscala = ESCALAS.indexOf(1); aplicarAR(); };
+
+    // Impede que o toque nos botões também mova o prato na cena de AR
+    for (const el of document.querySelectorAll('.ar-ui')) {
+      el.addEventListener('beforexrselect', (e) => e.preventDefault());
+    }
+
     mv.addEventListener('ar-status', (e) => {
-      if (e.detail.status === 'failed') {
+      const status = e.detail.status;
+      mv.classList.toggle('em-ar', status === 'session-started' || status === 'object-placed');
+      document.getElementById('ar-ajuda').textContent = status === 'object-placed'
+        ? 'Arraste para mover o prato na mesa'
+        : 'Aponte o celular para a mesa';
+      if (status === 'not-presenting') resetarAR();
+      if (status === 'failed') {
         document.getElementById('dica').textContent =
           'Não foi possível abrir a realidade aumentada. Verifique se a câmera está liberada e tente de novo.';
       }
