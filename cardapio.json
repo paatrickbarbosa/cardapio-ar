@@ -3,22 +3,20 @@
   "subtitulo": "Toque em um prato e veja ele na sua mesa, em tamanho real",
   "pratos": [
     {
-      "id": "nachos",
-      "nome": "Nachos da casa",
-      "descricao": "Tortilhas crocantes com guacamole, queijo cheddar, tomate e pimenta jalapeño.",
+      "id": "peca-01",
+      "nome": "Peca 01",
+      "descricao": "Modelo peca 01.",
       "preco": 42.9,
       "categoria": "Entradas",
-      "modelo": "modelos/peca1.glb",
-      "imagem": "img/nachos.webp"
+      "modelo": "modelos/peca1.glb"
     },
     {
-      "id": "abacate",
-      "nome": "Abacate (teste de escala)",
-      "descricao": "Modelo de exemplo com 10 cm, para conferir se o tamanho real está certo na mesa.",
+      "id": "eixo",
+      "nome": "Eixo",
+      "descricao": "Modelo eixo.",
       "preco": 0,
       "categoria": "Testes",
-      "modelo": "modelos/peca4.glb",
-      "imagem": "img/abacate.webp"
+      "modelo": "modelos/peca4.glb"
     }
   ]
 }

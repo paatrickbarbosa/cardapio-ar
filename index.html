@@ -316,7 +316,7 @@
       mv.src = prato.modelo;
       // iPhone/iPad (Quick Look): usa o .usdz se existir; senão o model-viewer converte o .glb sozinho
       if (prato.modeloIos) mv.setAttribute('ios-src', prato.modeloIos); else mv.removeAttribute('ios-src');
-      mv.poster = prato.imagem;
+      if (prato.imagem) mv.poster = prato.imagem; else mv.removeAttribute('poster');
       document.getElementById('ar-nome').textContent = prato.nome;
       document.getElementById('ar-preco').textContent = fmt(prato.preco);
       resetarAR();
@@ -386,7 +386,7 @@
           b.className = 'prato';
           b.innerHTML = `<img alt="" loading="lazy"><div style="flex:1"><h3></h3><p></p>
         <div class="linha"><span class="preco"></span><span class="tag">Ver em 3D ›</span></div></div>`;
-          b.querySelector('img').src = p.imagem;
+          if (p.imagem) b.querySelector('img').src = p.imagem; else b.querySelector('img').remove();
           b.querySelector('h3').textContent = p.nome;
           b.querySelector('p').textContent = p.descricao;
           b.querySelector('.preco').textContent = fmt(p.preco);
